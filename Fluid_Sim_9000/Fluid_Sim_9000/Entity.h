@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+using std::string;
+
 #include <vector>
 using std::vector;
 
@@ -21,13 +24,15 @@ struct Entity
 	Entity() {}
 
 	//ctor
-	Entity(	const int max_press,
-			const int min_press,
+	Entity(	string name,
+			int max_press,
+			int min_press,
 			float fluid_level,
-			const int max_cap,
+			int max_cap,
 			float consump_rate,
 			float prod_rate,
 			float current_press) :
+			name(name),
 			max_press(max_press),
 			min_press(min_press),
 			fluid_level(fluid_level),
@@ -36,6 +41,8 @@ struct Entity
 			prod_rate(prod_rate),
 			current_press(current_press) {}
 
+	//name of type of entity
+	string name;
 	//Maxium pressure
 	int max_press;
 	//Minimum pressure
