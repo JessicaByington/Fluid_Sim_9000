@@ -4,9 +4,12 @@
 *	Last Modification date:		7/20/2017
 *	Filename:					Source.cpp
 *
-*	Overview:
+*	Overview: This program is used to simulate the fluid mechanics in
+*		various entities in Factorio that will be specified by the 
+*		user in a file. 
 *
-*	Input:
+*	Input: A file will be provided by the user with specified 
+*		parameters, order, and connections to other entities.
 *
 *	Output:
 *
@@ -32,6 +35,9 @@ using std::string;
 #include <algorithm>
 using std::transform;
 
+#include <list>
+using std::list;
+
 /*******************************************************************/
 /* Function Declarations */
 //Main loop of program, loops through vectors and updates data in them every 1/60s
@@ -56,10 +62,10 @@ int InitEntities(Entity & , string );
 void Reset(vector<Entity> & , vector<int> );
 
 // Outputs a csv file of calculated data (To print out header for csv data)
-void PrintToFile(string, int, vector<Entity>, vector< tuple< vector<int>, float> >);
+void PrintToFile(string, int, vector<Entity>);
 
 // Outputs a csv file of calculated data (Overloaded to print fluid level data)
-void PrintToFile(string output_file, int num_cycles, int index, float fluid_level);
+void PrintToFile(string output_file, vector<Entity> entities, int cycle);
 
 /*******************************************************************/
 /* Constants */
@@ -74,7 +80,7 @@ const string FILE_PATH = "C:\\Users\\Commander\\Downloads\\demo.csv";
 int main()
 {
 	// Init main structs
-	vector<Entity> entites;
+	vector<Entity> entities;
 	vector< tuple< vector<int>, float> > entity_connections;
 	
 	// update producer/consumer/water pump values at end of cycle
@@ -91,14 +97,21 @@ int main()
 	// get user input
 	num_cycles = StartMenu(input_path, output_path);
 
+	// convert from seconds to cycles
+	num_cycles *= 60;
+
 	// Get data from input file
-	Populate(input_path, entites, entity_connections, update);
+	Populate(input_path, entities, entity_connections, update);
+
+	// print headers for the entities in the output file
+	PrintToFile(output_path, num_cycles, entities);
+	PrintToFile(output_path, entities, 0);
 
 	// run loop for number of cycles specified by user
 	for (int i = 0; i < num_cycles; i++)
 	{
 		//Start main loop of program
-		Update(entites, entity_connections, update, output_path, i);
+		Update(entities, entity_connections, update, output_path, i + 1);
 	}
 
 	return 0;
@@ -108,13 +121,13 @@ int main()
 *	Purpose: Main loop of program, loops through vectors and updates 
 *		data in them every cycle
 *
-*	Entry: Populated vector of entites and entity connections 
+*	Entry: Populated vector of entities and entity connections 
 *
 *	Exit: Press and flow calculated and updated in each entity and
 *		in each connection
 *
 ********************************************************************/
-void Update(vector<Entity> & entites, vector<tuple< vector<int>, float>> & entity_connections, vector<int> update, string output_file, int cycle)
+void Update(vector<Entity> & entities, vector<tuple< vector<int>, float>> & entity_connections, vector<int> update, string output_file, int cycle)
 {
 	// store size, removing some overhead of calling ".size()" every loop
 	int size = entity_connections.size();
@@ -133,16 +146,17 @@ void Update(vector<Entity> & entites, vector<tuple< vector<int>, float>> & entit
 			int dest = get<0>(entity_connections[i])[1];
 
 			// preform calculations 
-			CalculatePressure(entites[source]);
-			CalculatePressure(entites[dest]);
-			CalculateFlow(entites[source], entites[dest], get<1>(entity_connections[i]));
-
-			PrintToFile(output_file, cycle, source, entites[source].fluid_level);
+			CalculatePressure(entities[source]);
+			CalculatePressure(entities[dest]);
+			CalculateFlow(entities[source], entities[dest], get<1>(entity_connections[i]));
 		}
 	}
 
 	// resets values to default
-	Reset(entites, update);
+	Reset(entities, update);
+
+	// print out fluid level per entity for this cycle
+	PrintToFile(output_file, entities, cycle);
 }
 
 /********************************************************************
@@ -155,7 +169,7 @@ void Update(vector<Entity> & entites, vector<tuple< vector<int>, float>> & entit
 *		populated
 *
 ********************************************************************/
-void Populate(string input_file, vector<Entity> & entites, vector< tuple< vector<int>, float> > & entity_connections, vector<int> & update)
+void Populate(string input_file, vector<Entity> & entities, vector< tuple< vector<int>, float> > & entity_connections, vector<int> & update)
 {
 	// Used to indicated if the file opened successfully.
 	// If false, user will be prompted again and will attempt to open again,
@@ -193,7 +207,7 @@ void Populate(string input_file, vector<Entity> & entites, vector< tuple< vector
 		{
 		    /* Get the whole line of text, then use list of delimiters
 			 * to break up line into desired data.
-			 * This is where entites and entity_pair_data is populated,
+			 * This is where entities and entity_pair_data is populated,
 			 * loop until end of file (no more data to be read),
 			 * this will read in the first line of the file.
 			 */
@@ -267,7 +281,7 @@ void Populate(string input_file, vector<Entity> & entites, vector< tuple< vector
 
 					// add data to vectors
 					// add new entity to the vector
-					entites.push_back(Entity(	temp_ent.entity_index,
+					entities.push_back(Entity(	temp_ent.entity_index,
 												temp_ent.name,
 												temp_ent.max_press,
 												temp_ent.min_press,
@@ -310,7 +324,7 @@ int InitEntities(Entity & entity, string type)
 		entity.max_press = 200;
 		entity.min_press = 0;
 		entity.fluid_level = 20.0;
-		entity.max_cap = 200;
+		entity.max_cap = 20;
 		entity.prod_rate = 20.0;
 		entity.current_press = 0.0;
 	}
@@ -400,24 +414,32 @@ void CalculateFlow(Entity & source, Entity & dest, float & prev_flow)
 	// dest gains fluid, source loses
 	if (prev_flow >= 0)
 	{
-		// bounds checking, removing from source if not empty 
-		if ((source.fluid_level - prev_flow) >= 0)
-			source.fluid_level -= prev_flow;
-		
-		// bounds checking, adding to dest if not full
-		if ((dest.fluid_level + prev_flow) <= dest.max_cap)
-			dest.fluid_level += prev_flow;
+		// check to see if there is enough fluid to transfer. 
+		if (source.fluid_level >= abs(prev_flow))
+		{
+			// bounds checking, removing from source if not empty 
+			if ((source.fluid_level - prev_flow) >= 0)
+				source.fluid_level -= prev_flow;
+
+			// bounds checking, adding to dest if not full
+			if ((dest.fluid_level + prev_flow) <= dest.max_cap)
+				dest.fluid_level += prev_flow;
+		}
 	}
 	// back flow, dest loses fluid, source gains
 	else
 	{
-		// bounds checking, addign fluid to source if not full
-		if ((source.fluid_level + abs(prev_flow)) <= source.max_cap)
-			source.fluid_level += abs(prev_flow);
+		// check to see if there is enough fluid to transfer. 
+		if (dest.fluid_level >= abs(prev_flow))
+		{
+			// bounds checking, addign fluid to source if not full
+			if ((source.fluid_level + abs(prev_flow)) <= source.max_cap)
+				source.fluid_level += abs(prev_flow);
 
-		// bounds checking, removing from dest if not empty
-		if ((dest.fluid_level - abs(prev_flow)) >= 0)
-			dest.fluid_level -= abs(prev_flow);
+			// bounds checking, removing from dest if not empty
+			if ((dest.fluid_level - abs(prev_flow)) >= 0)
+				dest.fluid_level -= abs(prev_flow);
+		}
 	}
 }
 
@@ -435,17 +457,25 @@ void Reset(vector<Entity> & entities, vector<int> update)
 {
 	for (int i = 0; i < update.size(); i++)
 	{
-		// if negative number, is consumer and will be reset to 0 
-		// fluid indicating it has drained. 
-		if (entities[update[i]].prod_rate < 0)
-			entities[update[i]].fluid_level = 0;
-		// assuming water pump fluid level will always be 20?
+		// Check if entity has a prod_rate
+		if (entities[update[i]].prod_rate != 0);
+		/*{
+			// calculate the change in fluid level
+			float prod_calc = (entities[update[i]].fluid_level + (entities[update[i]].prod_rate / 60));
+
+			// make sure new fluid level will be within the bounds of the entity
+			if ((entities[update[i]].max_cap >= prod_calc) && (prod_calc >= 0))
+			{
+				// change the fluid level in the entity
+				entities[update[i]].fluid_level = prod_calc;
+			}
+		}*/
+		// water pump fluid level will always be 20
 		else if (entities[update[i]].name == "water pump")
 			entities[update[i]].fluid_level = WATER_PUMP_LEVEL;
+		// nothing to do, exit if
 		else
-			// assuming that it is not a consumer it will be set to 
-			// the prod_rate
-			entities[update[i]].fluid_level = entities[update[i]].prod_rate;
+			break;
 	}
 }
 
@@ -475,35 +505,34 @@ int StartMenu(string & input_path, string & output_path)
 }
 
 /********************************************************************
-*	Purpose: Outputs a csv file of calculated data
+*	Purpose: Outputs to a csv file, formats header of csv
 *
-*	Entry: Finished number of cycles specified and data calculated and
-*		stored during those cycles for the entities
+*	Entry: Populated list of entities
 *
-*	Exit: csv file of data created
+*	Exit: csv file of data is updated with names of entities
 *
 ********************************************************************/
-void PrintToFile(string output_file, int num_cycles, vector<Entity> entities, vector< tuple< vector<int>, float> > entity_connections)
+void PrintToFile(string output_file, int num_cycles, vector<Entity> entities)
 {
 	// create output stream 
 	ofstream ofs;
 
 	// open the specified csv file to output to in append mode 
-	ofs.open(output_file, ofstream::out | ofstream::app);
+	ofs.open(output_file, ofstream::out);
 
 	// check if file was opening correctly 
-	if (!ofs.is_open)
+	if (!ofs.is_open())
 	{
 		cout << "Error opening output file!" << endl;
 	}
 	else
 	{
-		//start off header with names of entites
+		//start off header with names of entities
 		ofs << "Entity type/Index, ";
 		int size = entities.size();
 		for (int i = 0; i < size; i++)
 		{
-			ofs << entities[get<0>(entity_connections[i])[0]].name;
+			ofs << entities[i].name;
 
 			// if not last element, add ,
 			if (i < (size - 1))
@@ -514,38 +543,52 @@ void PrintToFile(string output_file, int num_cycles, vector<Entity> entities, ve
 		}
 	}
 
-
 	// finished with file, close.
 	ofs.close();
 }
 
-void PrintToFile(string output_file, int num_cycles, int index, float fluid_level)
+/********************************************************************
+*	Purpose: Outputs to a csv file, adds data to csv
+*
+*	Entry: Calculated fluid level per entity per cycle
+*
+*	Exit: csv file of data is appended to with incoming fluid levels
+*
+********************************************************************/
+void PrintToFile(string output_file, vector<Entity> entities, int cycle)
 {
 	// create output stream 
 	ofstream ofs;
+
+	// get size of entities so size function isn't being called repeatedly
+	int size = entities.size();
 
 	// open the specified csv file to output to in append mode 
 	ofs.open(output_file, ofstream::out | ofstream::app);
 
 	// check if file was opening correctly 
-	if (!ofs.is_open)
+	if (!ofs.is_open())
 	{
 		cout << "Error opening output file!" << endl;
 	}
 	else
 	{
-		//start off header with names of entites
-		ofs << "Tick, ";
+		// print which cycle this is for
+		ofs << cycle << ",";
 
-		ofs << entities[get<0>(entity_connections[i])[0]].name;
+		// for each entity in entitites, print out it's fluid level
+		for (int i = 0; i < size; i++)
+		{
+			// prints the fluid level for the entity at the end of this cycle
+			ofs << entities[i].fluid_level;
 
-		// if not last element, add ,
-		if (i < (size - 1))
-			ofs << ",";
-		// if last element, add a newline
-		else
-			ofs << "\n";
-		
+			// if not last element, add ,
+			if (i < (size - 1))
+				ofs << ",";
+			// if last element, add a newline
+			else
+				ofs << "\n";
+		}
 	}
 
 
