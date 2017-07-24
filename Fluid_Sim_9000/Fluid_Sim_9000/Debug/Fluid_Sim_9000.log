@@ -1,12 +1,12 @@
 ﻿  Source.cpp
-h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(201): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(204): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(208): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(217): warning C4018: '<': signed/unsigned mismatch
-h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(167): warning C4101: 'temp_entity_index': unreferenced local variable
-h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(337): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(338): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(351): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(390): warning C4018: '<': signed/unsigned mismatch
+h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(207): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(210): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(214): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(223): warning C4018: '<': signed/unsigned mismatch
+h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(173): warning C4101: 'temp_entity_index': unreferenced local variable
+h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(343): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(344): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(356): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+h:\programming projects\repos\fluid_sim_9000\fluid_sim_9000\fluid_sim_9000\source.cpp(396): warning C4018: '<': signed/unsigned mismatch
   Fluid_Sim_9000.vcxproj -> H:\Programming Projects\Repos\Fluid_Sim_9000\Fluid_Sim_9000\Debug\Fluid_Sim_9000.exe
   Fluid_Sim_9000.vcxproj -> H:\Programming Projects\Repos\Fluid_Sim_9000\Fluid_Sim_9000\Debug\Fluid_Sim_9000.pdb (Partial PDB)

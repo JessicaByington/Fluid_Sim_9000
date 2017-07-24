@@ -32,11 +32,13 @@ using std::string;
 #include <algorithm>
 using std::transform;
 
+/*******************************************************************/
+/* Function Declarations */
 //Main loop of program, loops through vectors and updates data in them every 1/60s
-void Update(vector<Entity> & , vector< tuple< vector<int>, float> > & , vector<int>);
+void Update(vector<Entity> & , vector< tuple< vector<int>, float> > & , vector<int>, string , int );
 
 //Gets data to create entities, and populates vectors to store the data
-void Populate(vector<Entity> & , vector< tuple< vector<int>, float> > & , vector<int> &);
+void Populate(string, vector<Entity> & , vector< tuple< vector<int>, float> > & , vector<int> &);
 
 //Calcuates the current water pressure in an entity
 void CalculatePressure(Entity &);
@@ -45,7 +47,7 @@ void CalculatePressure(Entity &);
 void CalculateFlow(Entity & , Entity & , float & );
 
 // Displays input menu if no cmd args were passed
-void StartMenu();
+int StartMenu(string &, string &);
 
 // Initializes incoming entities, returns -1 if no entity of that type was found 
 int InitEntities(Entity & , string );
@@ -53,53 +55,93 @@ int InitEntities(Entity & , string );
 // Resets both consumer and producer vars in entities back to specified values
 void Reset(vector<Entity> & , vector<int> );
 
+// Outputs a csv file of calculated data (To print out header for csv data)
+void PrintToFile(string, int, vector<Entity>, vector< tuple< vector<int>, float> >);
+
+// Outputs a csv file of calculated data (Overloaded to print fluid level data)
+void PrintToFile(string output_file, int num_cycles, int index, float fluid_level);
+
+/*******************************************************************/
+/* Constants */
+// default value for water pump
+const float WATER_PUMP_LEVEL = 20;
+
 //TEMP DATA FOR TESTING
 const string FILE_PATH = "C:\\Users\\Commander\\Downloads\\demo.csv";
 
+/*******************************************************************/
+/* Function Defiitions */
 int main()
 {
 	// Init main structs
 	vector<Entity> entites;
 	vector< tuple< vector<int>, float> > entity_connections;
+	
 	// update producer/consumer/water pump values at end of cycle
 	vector<int> update;
-	
-	//Get data
-	Populate(entites, entity_connections, update);
 
-	//Start main loop of program
-	Update(entites, entity_connections, update);
+	// Values to get from user
+	// get number of cycles
+	int num_cycles = 0;
+	// get input file location
+	string input_path = "";
+	// get output file location
+	string output_path = "";
+
+	// get user input
+	num_cycles = StartMenu(input_path, output_path);
+
+	// Get data from input file
+	Populate(input_path, entites, entity_connections, update);
+
+	// run loop for number of cycles specified by user
+	for (int i = 0; i < num_cycles; i++)
+	{
+		//Start main loop of program
+		Update(entites, entity_connections, update, output_path, i);
+	}
 
 	return 0;
 }
 
 /********************************************************************
-*	Purpose:
-*	Main loop of program, loops through vectors and updates data in 
-*	them every 1/60s
+*	Purpose: Main loop of program, loops through vectors and updates 
+*		data in them every cycle
 *
-*	Entry:
+*	Entry: Populated vector of entites and entity connections 
 *
-*	Exit:
+*	Exit: Press and flow calculated and updated in each entity and
+*		in each connection
 *
 ********************************************************************/
-void Update(vector<Entity> & entites, vector<tuple< vector<int>, float>> & entity_connections, vector<int> update)
+void Update(vector<Entity> & entites, vector<tuple< vector<int>, float>> & entity_connections, vector<int> update, string output_file, int cycle)
 {
+	// store size, removing some overhead of calling ".size()" every loop
 	int size = entity_connections.size();
+
+	// run calculation on each pair in the connections vector
 	for (int i = 0; i < size; i++)
 	{
+		// get source index
 		int source = get<0>(entity_connections[i])[0];
 		
+		// if source index is -1, then it has no connections and does not 
+		// anywhere to flow to. 
 		if (source != -1)
 		{
+			// get dest index 
 			int dest = get<0>(entity_connections[i])[1];
 
-			CalculateFlow(entites[source], entites[dest], get<1>(entity_connections[i]));
+			// preform calculations 
 			CalculatePressure(entites[source]);
 			CalculatePressure(entites[dest]);
+			CalculateFlow(entites[source], entites[dest], get<1>(entity_connections[i]));
+
+			PrintToFile(output_file, cycle, source, entites[source].fluid_level);
 		}
 	}
 
+	// resets values to default
 	Reset(entites, update);
 }
 
@@ -113,7 +155,7 @@ void Update(vector<Entity> & entites, vector<tuple< vector<int>, float>> & entit
 *		populated
 *
 ********************************************************************/
-void Populate(vector<Entity> & entites, vector< tuple< vector<int>, float> > & entity_connections, vector<int> & update)
+void Populate(string input_file, vector<Entity> & entites, vector< tuple< vector<int>, float> > & entity_connections, vector<int> & update)
 {
 	// Used to indicated if the file opened successfully.
 	// If false, user will be prompted again and will attempt to open again,
@@ -139,7 +181,7 @@ void Populate(vector<Entity> & entites, vector< tuple< vector<int>, float> > & e
 		ifstream ifs;
 
 		// open file for reading
-		ifs.open(FILE_PATH, ifstream::in);
+		ifs.open(input_file, ifstream::in);
 
 		// check to see if file opened correctly, if unsuccessful try again.
 		if (!ifs.is_open())
@@ -245,6 +287,10 @@ void Populate(vector<Entity> & entites, vector< tuple< vector<int>, float> > & e
 					first_line = 1;
 			}
 		}
+
+		// file no longer in use, close
+		ifs.close();
+
 	} while (!success_flag);
 }
 
@@ -347,12 +393,12 @@ void CalculateFlow(Entity & source, Entity & dest, float & prev_flow)
 		inertial_comp = inertial_tran;
 
 	// flow calculation
-	float new_flow = (source.current_press - dest.current_press);
-	prev_flow = (new_flow * 0.4 + inertial_comp);
+	float new_flow = ((source.current_press - dest.current_press) * 0.4);
+	prev_flow = (new_flow + inertial_comp);
 
 	// recalculate water levels.
 	// dest gains fluid, source loses
-	if (new_flow > 0)
+	if (prev_flow >= 0)
 	{
 		// bounds checking, removing from source if not empty 
 		if ((source.fluid_level - prev_flow) >= 0)
@@ -365,13 +411,13 @@ void CalculateFlow(Entity & source, Entity & dest, float & prev_flow)
 	// back flow, dest loses fluid, source gains
 	else
 	{
-		// bounds checking, add fluid to source if not full
-		if ((source.fluid_level + prev_flow) <= source.max_cap)
-			source.fluid_level += prev_flow;
+		// bounds checking, addign fluid to source if not full
+		if ((source.fluid_level + abs(prev_flow)) <= source.max_cap)
+			source.fluid_level += abs(prev_flow);
 
-		// bounds checking, adding to dest if not full
-		if ((dest.fluid_level - prev_flow) >= dest.max_cap)
-			dest.fluid_level -= prev_flow;
+		// bounds checking, removing from dest if not empty
+		if ((dest.fluid_level - abs(prev_flow)) >= 0)
+			dest.fluid_level -= abs(prev_flow);
 	}
 }
 
@@ -393,6 +439,9 @@ void Reset(vector<Entity> & entities, vector<int> update)
 		// fluid indicating it has drained. 
 		if (entities[update[i]].prod_rate < 0)
 			entities[update[i]].fluid_level = 0;
+		// assuming water pump fluid level will always be 20?
+		else if (entities[update[i]].name == "water pump")
+			entities[update[i]].fluid_level = WATER_PUMP_LEVEL;
 		else
 			// assuming that it is not a consumer it will be set to 
 			// the prod_rate
@@ -401,15 +450,105 @@ void Reset(vector<Entity> & entities, vector<int> update)
 }
 
 /********************************************************************
-*	Purpose:
-*	If no command args passed in, prompt with menu
+*	Purpose: If no command args passed in, prompt with menu
 *
-*	Entry:
+*	Entry: none
 *
-*	Exit:
+*	Exit: retrieved input/output file locations from user and number
+*		of desired cycles.
 *
 ********************************************************************/
-void StartMenu()
+int StartMenu(string & input_path, string & output_path)
 {
+	int num_cycles = 0;
 
+	cout << "Welcome to Fluid Sim 9000" << endl;
+	cout << "Enter input file location: ";
+	cin >> input_path;
+	cout << "\nEnter output file location: ";
+	cin >> output_path;
+	cout << "\nEnter length of run (seconds): ";
+	cin >> num_cycles;
+	cout << endl;
+
+	return num_cycles;
+}
+
+/********************************************************************
+*	Purpose: Outputs a csv file of calculated data
+*
+*	Entry: Finished number of cycles specified and data calculated and
+*		stored during those cycles for the entities
+*
+*	Exit: csv file of data created
+*
+********************************************************************/
+void PrintToFile(string output_file, int num_cycles, vector<Entity> entities, vector< tuple< vector<int>, float> > entity_connections)
+{
+	// create output stream 
+	ofstream ofs;
+
+	// open the specified csv file to output to in append mode 
+	ofs.open(output_file, ofstream::out | ofstream::app);
+
+	// check if file was opening correctly 
+	if (!ofs.is_open)
+	{
+		cout << "Error opening output file!" << endl;
+	}
+	else
+	{
+		//start off header with names of entites
+		ofs << "Entity type/Index, ";
+		int size = entities.size();
+		for (int i = 0; i < size; i++)
+		{
+			ofs << entities[get<0>(entity_connections[i])[0]].name;
+
+			// if not last element, add ,
+			if (i < (size - 1))
+				ofs << ",";
+			// if last element, add a newline
+			else
+				ofs << "\n";
+		}
+	}
+
+
+	// finished with file, close.
+	ofs.close();
+}
+
+void PrintToFile(string output_file, int num_cycles, int index, float fluid_level)
+{
+	// create output stream 
+	ofstream ofs;
+
+	// open the specified csv file to output to in append mode 
+	ofs.open(output_file, ofstream::out | ofstream::app);
+
+	// check if file was opening correctly 
+	if (!ofs.is_open)
+	{
+		cout << "Error opening output file!" << endl;
+	}
+	else
+	{
+		//start off header with names of entites
+		ofs << "Tick, ";
+
+		ofs << entities[get<0>(entity_connections[i])[0]].name;
+
+		// if not last element, add ,
+		if (i < (size - 1))
+			ofs << ",";
+		// if last element, add a newline
+		else
+			ofs << "\n";
+		
+	}
+
+
+	// finished with file, close.
+	ofs.close();
 }
