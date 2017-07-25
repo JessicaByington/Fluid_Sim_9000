@@ -70,7 +70,7 @@ void Reset(vector<Entity> & , vector<int> );
 void PrintToFile(string, int, vector<Entity>);
 
 // Outputs a csv file of calculated data (Overloaded to print fluid level data)
-void PrintToFile(string output_file, vector<Entity> entities, int cycle);
+void PrintToFile(string, vector<Entity>, int );
 
 /*******************************************************************/
 /* Constants */
@@ -147,6 +147,7 @@ void Update(vector<Entity> & entities, vector<tuple< vector<int>, float>> & enti
 		// anywhere to flow to. 
 		if (source != -1)
 		{
+			// TO DO: Make entity_conection index to j, for multiple inputs
 			// get dest index 
 			int dest = get<0>(entity_connections[i])[1];
 
@@ -577,6 +578,7 @@ void PrintToFile(string output_file, int num_cycles, vector<Entity> entities)
 	}
 	else
 	{
+		// TO DO: Break output "," and "\n" into own functions
 		// start off header with names of entities
 		ofs << "Entity type/Index, ";
 		int size = entities.size();
