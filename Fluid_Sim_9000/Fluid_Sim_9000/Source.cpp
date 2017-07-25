@@ -1,7 +1,7 @@
 /********************************************************************
 *	Author:						Jessica Byington
 *	Date Created:				7/20/2017
-*	Last Modification date:		7/20/2017
+*	Last Modification date:		7/24/2017
 *	Filename:					Source.cpp
 *
 *	Overview: This program is used to simulate the fluid mechanics in
@@ -11,7 +11,8 @@
 *	Input: A file will be provided by the user with specified 
 *		parameters, order, and connections to other entities.
 *
-*	Output:
+*	Output: A csv file with calculated fluid flow between all entites
+*		that will be output every cycle (user specified seconds * 60)
 *
 *
 ********************************************************************/
