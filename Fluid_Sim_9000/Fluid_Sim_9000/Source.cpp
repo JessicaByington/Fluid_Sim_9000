@@ -19,8 +19,7 @@
 using std::cin;
 using std::cout;
 using std::endl;
-
-#include "Entity.h"
+using std::fixed;
 
 #include <fstream>
 using std::ifstream;
@@ -37,6 +36,11 @@ using std::transform;
 
 #include <list>
 using std::list;
+
+#include <math.h>
+using std::roundf;
+
+#include "Entity.h"
 
 /*******************************************************************/
 /* Function Declarations */
@@ -321,11 +325,11 @@ int InitEntities(Entity & entity, string type)
 	if (type == "water pump")
 	{
 		entity.name = type;
-		entity.max_press = 200;
+		entity.max_press = 100;
 		entity.min_press = 0;
 		entity.fluid_level = 20.0;
 		entity.max_cap = 20;
-		entity.prod_rate = 20.0;
+		entity.prod_rate = 0.0;
 		entity.current_press = 0.0;
 	}
 	else if (type == "pipe")
@@ -419,12 +423,35 @@ void CalculateFlow(Entity & source, Entity & dest, float & prev_flow)
 		{
 			// bounds checking, removing from source if not empty 
 			if ((source.fluid_level - prev_flow) >= 0)
-				source.fluid_level -= prev_flow;
+				source.fluid_level = (source.fluid_level - prev_flow);
 
 			// bounds checking, adding to dest if not full
 			if ((dest.fluid_level + prev_flow) <= dest.max_cap)
-				dest.fluid_level += prev_flow;
+				dest.fluid_level = (dest.fluid_level + prev_flow);
 		}
+		// give max amount of fluid in the source entity to fill to max capacity 
+		else if (dest.fluid_level < dest.max_cap)
+		{ 
+			// Calc the amount needed to fill entity to capacity 
+			float amount_needed = (dest.max_cap - dest.fluid_level);
+
+			// give all of the source fluid to the dest as long as it is within the max cap
+			if (amount_needed >= source.fluid_level)
+			{
+				// add all of the fluids from the source, emptying the source
+				dest.fluid_level = (dest.fluid_level + source.fluid_level);
+				source.fluid_level = (source.fluid_level - source.fluid_level);
+			}
+			// give a portion of the sources fluids to the dest
+			else if (amount_needed < source.fluid_level)
+			{
+				// add only amount needed to dest, only removing amount needed from source
+				dest.fluid_level = (dest.fluid_level + amount_needed);
+				source.fluid_level = (source.fluid_level - amount_needed);
+			}
+
+		}
+
 	}
 	// back flow, dest loses fluid, source gains
 	else
@@ -434,11 +461,33 @@ void CalculateFlow(Entity & source, Entity & dest, float & prev_flow)
 		{
 			// bounds checking, addign fluid to source if not full
 			if ((source.fluid_level + abs(prev_flow)) <= source.max_cap)
-				source.fluid_level += abs(prev_flow);
+				source.fluid_level = (source.fluid_level + abs(prev_flow));
 
 			// bounds checking, removing from dest if not empty
 			if ((dest.fluid_level - abs(prev_flow)) >= 0)
-				dest.fluid_level -= abs(prev_flow);
+				dest.fluid_level = (dest.fluid_level - abs(prev_flow));
+		}
+		// give max amount of fluid in the dest entity to fill to max capacity 
+		else if (source.fluid_level < source.max_cap)
+		{
+			// Calc the amount needed to fill entity to capacity 
+			float amount_needed = (source.max_cap - source.fluid_level);
+
+			// give all of the dest fluid to the source as long as it is within the max cap
+			if (amount_needed >= source.fluid_level)
+			{
+				// add all of the fluids from the dest, emptying the dest
+				source.fluid_level = (source.fluid_level + dest.fluid_level);
+				dest.fluid_level = (dest.fluid_level - dest.fluid_level);
+			}
+			// give a portion of the dest fluids to the source
+			else if (amount_needed < dest.fluid_level)
+			{
+				// add only amount needed to source, only removing amount needed from dest
+				source.fluid_level = (source.fluid_level + amount_needed);
+				dest.fluid_level = (dest.fluid_level - amount_needed);
+			}
+
 		}
 	}
 }
@@ -458,8 +507,8 @@ void Reset(vector<Entity> & entities, vector<int> update)
 	for (int i = 0; i < update.size(); i++)
 	{
 		// Check if entity has a prod_rate
-		if (entities[update[i]].prod_rate != 0);
-		/*{
+		if (entities[update[i]].prod_rate != 0)
+		{
 			// calculate the change in fluid level
 			float prod_calc = (entities[update[i]].fluid_level + (entities[update[i]].prod_rate / 60));
 
@@ -469,7 +518,7 @@ void Reset(vector<Entity> & entities, vector<int> update)
 				// change the fluid level in the entity
 				entities[update[i]].fluid_level = prod_calc;
 			}
-		}*/
+		}
 		// water pump fluid level will always be 20
 		else if (entities[update[i]].name == "water pump")
 			entities[update[i]].fluid_level = WATER_PUMP_LEVEL;
@@ -527,12 +576,68 @@ void PrintToFile(string output_file, int num_cycles, vector<Entity> entities)
 	}
 	else
 	{
-		//start off header with names of entities
+		// start off header with names of entities
 		ofs << "Entity type/Index, ";
 		int size = entities.size();
 		for (int i = 0; i < size; i++)
 		{
 			ofs << entities[i].name;
+
+			// if not last element, add ,
+			if (i < (size - 1))
+				ofs << ",";
+			// if last element, add a newline
+			else
+				ofs << "\n";
+		}
+
+		// print entity index
+		ofs << "Numeric Index, ";
+		for (int i = 0; i < size; i++)
+		{
+			ofs << entities[i].entity_index;
+
+			// if not last element, add ,
+			if (i < (size - 1))
+				ofs << ",";
+			// if last element, add a newline
+			else
+				ofs << "\n";
+		}
+
+		// print entity capacity
+		ofs << "Max capacity, ";
+		for (int i = 0; i < size; i++)
+		{
+			ofs << entities[i].max_cap;
+
+			// if not last element, add ,
+			if (i < (size - 1))
+				ofs << ",";
+			// if last element, add a newline
+			else
+				ofs << "\n";
+		}
+
+		// min pressure
+		ofs << "Min Pressure, ";
+		for (int i = 0; i < size; i++)
+		{
+			ofs << entities[i].min_press;
+
+			// if not last element, add ,
+			if (i < (size - 1))
+				ofs << ",";
+			// if last element, add a newline
+			else
+				ofs << "\n";
+		}
+
+		// min/max pressure
+		ofs << "Max Pressure, ";
+		for (int i = 0; i < size; i++)
+		{
+			ofs << entities[i].max_press;
 
 			// if not last element, add ,
 			if (i < (size - 1))
@@ -573,6 +678,9 @@ void PrintToFile(string output_file, vector<Entity> entities, int cycle)
 	}
 	else
 	{
+		ofs.precision(1);
+		ofs << fixed;
+
 		// print which cycle this is for
 		ofs << cycle << ",";
 

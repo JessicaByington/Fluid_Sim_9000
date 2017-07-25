@@ -1,0 +1,14 @@
+﻿  Source.cpp
+Source.cpp(261): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+Source.cpp(264): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+Source.cpp(268): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+Source.cpp(277): warning C4018: '<': signed/unsigned mismatch
+Source.cpp(227): warning C4101: 'temp_entity_index': unreferenced local variable
+Source.cpp(401): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+Source.cpp(402): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+Source.cpp(414): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+Source.cpp(507): warning C4018: '<': signed/unsigned mismatch
+  Generating code
+  All 578 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  Fluid_Sim_9000.vcxproj -> H:\Programming Projects\Repos\Fluid_Sim_9000\Fluid_Sim_9000\Release\Fluid_Sim_9000.exe
