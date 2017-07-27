@@ -28,7 +28,7 @@ struct Entity
 	Entity() {}
 
 	//ctor
-	Entity( int entity_index,
+	Entity(	int entity_index,
 			string name,
 			int max_press,
 			int min_press,
@@ -54,11 +54,67 @@ struct Entity
 	//Minimum pressure
 	int min_press;
 	//Current fluid level, recalculated as flow and pressure changes
-	float fluid_level = 0;
+	float fluid_level = 0.0;
 	//Maxium fluid capacity allowed in entity
 	int max_cap;
 	//Rate at which the fluid is produced
 	float prod_rate;
 	//Current pressure, recalculated as fluid_level is changed
-	float current_press;
+	float current_press = 0.0;
 };
+
+/********************************************************************
+*	Purpose: Initializes incoming entities with default values
+*
+*	Entry: Ref to entity struct where data is to be stored
+*
+*	Exit: Populated entity struct, success = 1, error = -1 return val
+*
+********************************************************************/
+int InitEntities(Entity & entity, string type)
+{
+	if (type == "water pump")
+	{
+		entity.name = type;
+		entity.max_press = 100;
+		entity.min_press = 0;
+		entity.fluid_level = 20.0;
+		entity.max_cap = 20;
+		entity.prod_rate = 0.0;
+		entity.current_press = 0.0;
+	}
+	else if (type == "pipe")
+	{
+		entity.name = type;
+		entity.max_press = 100;
+		entity.min_press = 0;
+		entity.fluid_level = 0.0;
+		entity.max_cap = 100;
+		entity.prod_rate = 0.0;
+		entity.current_press = 0.0;
+	}
+	else if ((type == "heat exchanger") || (type == "boiler") || (type == "steam engine") || (type == "steam turbine"))
+	{
+		entity.name = type;
+		entity.max_press = 100;
+		entity.min_press = -100;
+		entity.fluid_level = 0.0;
+		entity.max_cap = 200;
+		entity.prod_rate = 0.0;
+		entity.current_press = 0.0;
+	}
+	else if (type == "tank")
+	{
+		entity.name = type;
+		entity.max_press = 100;
+		entity.min_press = 0;
+		entity.fluid_level = 0.0;
+		entity.max_cap = 25000;
+		entity.prod_rate = 0.0;
+		entity.current_press = 0.0;
+	}
+	else
+		return -1;
+
+	return 1;
+}

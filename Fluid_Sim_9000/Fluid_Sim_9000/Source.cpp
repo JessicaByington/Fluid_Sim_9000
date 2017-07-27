@@ -1,7 +1,7 @@
 /********************************************************************
 *	Author:						Jessica Byington
 *	Date Created:				7/20/2017
-*	Last Modification date:		7/24/2017
+*	Last Modification date:		7/27/2017
 *	Filename:					Source.cpp
 *
 *	Overview: This program is used to simulate the fluid mechanics in
@@ -322,7 +322,7 @@ void Populate(string input_file, vector<Entity> & entities, vector< tuple< vecto
 *	Exit: Populated entity struct, success = 1, error = -1 return val
 *
 ********************************************************************/
-int InitEntities(Entity & entity, string type)
+/*int InitEntities(Entity & entity, string type)
 {
 	if (type == "water pump")
 	{
@@ -368,7 +368,7 @@ int InitEntities(Entity & entity, string type)
 		return -1;
 
 	return 1;
-}
+}*/
 
 /********************************************************************
 *	Purpose:
