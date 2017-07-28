@@ -73,7 +73,7 @@ struct Entity
 ********************************************************************/
 int InitEntities(Entity & entity, string type)
 {
-	if (type == "water pump")
+	if ((type == "water pump") || (type == "WP"))
 	{
 		entity.name = type;
 		entity.max_press = 100;
@@ -83,7 +83,7 @@ int InitEntities(Entity & entity, string type)
 		entity.prod_rate = 0.0;
 		entity.current_press = 0.0;
 	}
-	else if (type == "pipe")
+	else if ((type == "pipe") || (type == "P"))
 	{
 		entity.name = type;
 		entity.max_press = 100;
@@ -93,7 +93,10 @@ int InitEntities(Entity & entity, string type)
 		entity.prod_rate = 0.0;
 		entity.current_press = 0.0;
 	}
-	else if ((type == "heat exchanger") || (type == "boiler") || (type == "steam engine") || (type == "steam turbine"))
+	else if ((type == "heat exchanger") || (type == "boiler") || 
+			 (type == "steam engine") || (type == "steam turbine") ||
+			 (type == "HE") || (type == "B") || (type == "SE") ||
+			 (type == "ST"))
 	{
 		entity.name = type;
 		entity.max_press = 100;
@@ -103,7 +106,7 @@ int InitEntities(Entity & entity, string type)
 		entity.prod_rate = 0.0;
 		entity.current_press = 0.0;
 	}
-	else if (type == "tank")
+	else if ((type == "tank") || (type == "T"))
 	{
 		entity.name = type;
 		entity.max_press = 100;

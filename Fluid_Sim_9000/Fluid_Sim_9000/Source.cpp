@@ -16,6 +16,8 @@
 *
 *
 ********************************************************************/
+#include "MapCreator.h"
+
 #include <iostream>
 using std::cin;
 using std::cout;
@@ -41,7 +43,8 @@ using std::list;
 #include <math.h>
 using std::roundf;
 
-#include "Entity.h"
+#include <unordered_map>
+using std::unordered_map;
 
 /*******************************************************************/
 /* Function Declarations */
@@ -77,8 +80,13 @@ void PrintToFile(string, vector<Entity>, int );
 // default value for water pump
 const float WATER_PUMP_LEVEL = 20;
 
-//TEMP DATA FOR TESTING
-const string FILE_PATH = "C:\\Users\\Commander\\Downloads\\demo.csv";
+//TEMP INPUT DATA FOR TESTING
+const string INPUT_PATH = "C:\\Users\\Commander\\Downloads\\demo.csv";
+const string INPUT2_PATH = "C:\\Users\\Commander\\Downloads\\DensepipelayoutMap.csv";
+
+//TEMP OUTPUT FILE FOR TESTING
+const string OUTPUT_PATH = "C:\\Users\\Commander\\Downloads\\test_output.csv";
+const string OUTPUT2_PATH = "C:\\Users\\Commander\\Downloads\\dense_test_output.csv";
 
 /*******************************************************************/
 /* Function Defiitions */
@@ -87,11 +95,13 @@ int main()
 	// Init main structs
 	vector<Entity> entities;
 	vector< tuple< vector<int>, float> > entity_connections;
-	
+	unordered_map<int, int[4]> connections;
+
 	// update producer/consumer/water pump values at end of cycle
 	vector<int> update;
 
 	// Values to get from user
+	int file_type = 0;
 	// get number of cycles
 	int num_cycles = 0;
 	// get input file location
@@ -100,13 +110,32 @@ int main()
 	string output_path = "";
 
 	// get user input
-	num_cycles = StartMenu(input_path, output_path);
+	num_cycles = StartMenu(input_path, output_path, file_type));
 
 	// convert from seconds to cycles
 	num_cycles *= 60;
 
-	// Get data from input file
-	Populate(input_path, entities, entity_connections, update);
+	if (file_type == 0)
+	{
+		/******************************************************************
+		* CHANGE AFTER DONE WITH TESTING
+		******************************************************************/
+		input_path = INPUT2_PATH;
+		output_path = OUTPUT2_PATH;
+
+		Reader(input_path, entities, connections);
+	}
+	else if (file_type == 1)
+	{
+		/******************************************************************
+		* CHANGE AFTER DONE WITH TESTING
+		******************************************************************/
+		input_path = INPUT_PATH;
+		output_path = OUTPUT_PATH;
+
+		// Get data from list input file
+		Populate(input_path, entities, entity_connections, update);
+	}
 
 	// print headers for the entities in the output file
 	PrintToFile(output_path, num_cycles, entities);
@@ -539,11 +568,13 @@ void Reset(vector<Entity> & entities, vector<int> update)
 *		of desired cycles.
 *
 ********************************************************************/
-int StartMenu(string & input_path, string & output_path)
+int StartMenu(string & input_path, string & output_path, int & file_type)
 {
 	int num_cycles = 0;
 
 	cout << "Welcome to Fluid Sim 9000" << endl;
+	cout << "Enter input type (list = 0 or map = 1): "; 
+	cin >> file_type;
 	cout << "Enter input file location: ";
 	cin >> input_path;
 	cout << "\nEnter output file location: ";
