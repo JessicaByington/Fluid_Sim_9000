@@ -1,16 +1,9 @@
-﻿  Source.cpp
-Source.cpp(263): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-Source.cpp(266): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-Source.cpp(270): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-Source.cpp(279): warning C4018: '<': signed/unsigned mismatch
-Source.cpp(229): warning C4101: 'temp_entity_index': unreferenced local variable
-Source.cpp(403): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-Source.cpp(404): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-Source.cpp(416): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-Source.cpp(509): warning C4018: '<': signed/unsigned mismatch
+﻿  MapCreator.cpp
+MapCreator.cpp(105): warning C4018: '<': signed/unsigned mismatch
+MapCreator.cpp(107): warning C4018: '<': signed/unsigned mismatch
   Generating code
-  11 of 578 functions ( 1.9%) were compiled, the rest were copied from previous compilation.
+  1 of 833 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    59 functions had inline decision re-evaluated but remain unchanged
+    1 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Fluid_Sim_9000.vcxproj -> C:\Users\Jessica\Documents\Repos\Fluid_Sim_9000\Fluid_Sim_9000\Release\Fluid_Sim_9000.exe

@@ -1,4 +1,6 @@
 #pragma once
+#ifndef ENTITY_H
+#define ENTITY_H
 
 #include <string>
 using std::string;
@@ -63,61 +65,6 @@ struct Entity
 	float current_press = 0.0;
 };
 
-/********************************************************************
-*	Purpose: Initializes incoming entities with default values
-*
-*	Entry: Ref to entity struct where data is to be stored
-*
-*	Exit: Populated entity struct, success = 1, error = -1 return val
-*
-********************************************************************/
-int InitEntities(Entity & entity, string type)
-{
-	if ((type == "water pump") || (type == "WP"))
-	{
-		entity.name = type;
-		entity.max_press = 100;
-		entity.min_press = 0;
-		entity.fluid_level = 20.0;
-		entity.max_cap = 20;
-		entity.prod_rate = 0.0;
-		entity.current_press = 0.0;
-	}
-	else if ((type == "pipe") || (type == "P"))
-	{
-		entity.name = type;
-		entity.max_press = 100;
-		entity.min_press = 0;
-		entity.fluid_level = 0.0;
-		entity.max_cap = 100;
-		entity.prod_rate = 0.0;
-		entity.current_press = 0.0;
-	}
-	else if ((type == "heat exchanger") || (type == "boiler") || 
-			 (type == "steam engine") || (type == "steam turbine") ||
-			 (type == "HE") || (type == "B") || (type == "SE") ||
-			 (type == "ST"))
-	{
-		entity.name = type;
-		entity.max_press = 100;
-		entity.min_press = -100;
-		entity.fluid_level = 0.0;
-		entity.max_cap = 200;
-		entity.prod_rate = 0.0;
-		entity.current_press = 0.0;
-	}
-	else if ((type == "tank") || (type == "T"))
-	{
-		entity.name = type;
-		entity.max_press = 100;
-		entity.min_press = 0;
-		entity.fluid_level = 0.0;
-		entity.max_cap = 25000;
-		entity.prod_rate = 0.0;
-		entity.current_press = 0.0;
-	}
-	else
-		return -1;
+int extern InitEntities(Entity & entity, string type);
 
-	return 1;
-}
+#endif

@@ -61,7 +61,7 @@ void CalculatePressure(Entity &);
 void CalculateFlow(Entity & , Entity & , float & );
 
 // Displays input menu if no cmd args were passed
-int StartMenu(string &, string &);
+int StartMenu(string &, string &, int &);
 
 // Initializes incoming entities, returns -1 if no entity of that type was found 
 int InitEntities(Entity & , string );
@@ -81,12 +81,16 @@ void PrintToFile(string, vector<Entity>, int );
 const float WATER_PUMP_LEVEL = 20;
 
 //TEMP INPUT DATA FOR TESTING
-const string INPUT_PATH = "C:\\Users\\Commander\\Downloads\\demo.csv";
-const string INPUT2_PATH = "C:\\Users\\Commander\\Downloads\\DensepipelayoutMap.csv";
+//const string INPUT_PATH = "C:\\Users\\Commander\\Downloads\\demo.csv";
+const string INPUT_PATH = "C:\\Users\\Jessica\\Downloads\\demo.csv";
+//const string INPUT2_PATH = "C:\\Users\\Commander\\Downloads\\DensepipelayoutMap.csv";
+const string INPUT2_PATH = "C:\\Users\\Jessica\\Downloads\\DensepipelayoutMap.csv";
 
 //TEMP OUTPUT FILE FOR TESTING
-const string OUTPUT_PATH = "C:\\Users\\Commander\\Downloads\\test_output.csv";
-const string OUTPUT2_PATH = "C:\\Users\\Commander\\Downloads\\dense_test_output.csv";
+//const string OUTPUT_PATH = "C:\\Users\\Commander\\Downloads\\test_output.csv";
+//const string OUTPUT2_PATH = "C:\\Users\\Commander\\Downloads\\dense_test_output.csv";
+const string OUTPUT_PATH = "C:\\Users\\Jessica\\Downloads\\test_output.csv";
+const string OUTPUT2_PATH = "C:\\Users\\Jessica\\Downloads\\dense_test_output.csv";
 
 /*******************************************************************/
 /* Function Defiitions */
@@ -110,7 +114,7 @@ int main()
 	string output_path = "";
 
 	// get user input
-	num_cycles = StartMenu(input_path, output_path, file_type));
+	num_cycles = StartMenu(input_path, output_path, file_type);
 
 	// convert from seconds to cycles
 	num_cycles *= 60;
@@ -573,7 +577,7 @@ int StartMenu(string & input_path, string & output_path, int & file_type)
 	int num_cycles = 0;
 
 	cout << "Welcome to Fluid Sim 9000" << endl;
-	cout << "Enter input type (list = 0 or map = 1): "; 
+	cout << "Enter input type (mao = 0 or list = 1): "; 
 	cin >> file_type;
 	cout << "Enter input file location: ";
 	cin >> input_path;
