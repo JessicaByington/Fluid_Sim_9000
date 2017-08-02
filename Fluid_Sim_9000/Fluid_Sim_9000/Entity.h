@@ -66,5 +66,6 @@ struct Entity
 };
 
 int extern InitEntities(Entity & entity, string type);
+string extern ChangeFullName(string type);
 
 #endif

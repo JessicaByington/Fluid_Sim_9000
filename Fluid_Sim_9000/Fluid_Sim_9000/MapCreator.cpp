@@ -15,11 +15,12 @@ using std::transform;
 using std::cout;
 using std::endl;
 
-void Reader(string input_file, vector<Entity> & entities, unordered_map<int, int[4]> & connections)
+void Reader(string input_file)
 {
 	int max_index = 0;
 
-	vector< vector<string> > map;
+	vector< vector< tuple<string, int> > > map;
+	vector< tuple<string, int> > entities;
 
 	string line = "";
 
@@ -34,11 +35,11 @@ void Reader(string input_file, vector<Entity> & entities, unordered_map<int, int
 	}
 	else
 	{
-
 		// Populate the map, find the largest index used.
 		while (getline(ifs, line))
 		{
-			vector<string> temp_strvec;
+			// new vector for each row in map
+			vector< tuple<string, int> > row_data;
 
 			// temp vars for tokenizing the current line in the file
 			string token;
@@ -48,15 +49,11 @@ void Reader(string input_file, vector<Entity> & entities, unordered_map<int, int
 			//tokenize the string based on the delimiter ','
 			while (getline(ss, token, ','))
 			{
-
-				temp_strvec.push_back(token);
+				tuple<string, int> element;
 
 				// ignore if comment, won't contain an index
 				if ((token.find("#") == string::npos) || (token != ""))
 				{
-					// create temp entity 
-					Entity temp_ent = Entity();
-
 					// find if data has an index, if so remove the index
 					size_t found = token.find_first_of("0123456789");
 
@@ -66,40 +63,44 @@ void Reader(string input_file, vector<Entity> & entities, unordered_map<int, int
 						string temp_str = token.substr(0, found);
 						int temp_index = atoi(token.substr(found).c_str());
 
-						// Add those entities that have indices
-						temp_ent.entity_index = temp_index;
-
+						// reformate string so it is all in lower case
 						transform(temp_str.begin(), temp_str.end(), temp_str.begin(), ::toupper);
 
-						if (!InitEntities(temp_ent, temp_str) == 1)
-						{
-							cout << "Error with entity type, please check your file." << endl;
-						}
+						// get full entity name
+						string full_name = ChangeFullName(temp_str);
 
-						/*******************************************************************
-						*	Need to find out how non-default values will be in file
-						*******************************************************************/
+						// create element for entity data
+						element = make_tuple(full_name, temp_index);
 
 						// store if larger. Will give starting place for un-indexed entities
 						if (temp_index > max_index)
 							max_index = temp_index;
-
-						// add data to vectors
-						// add new entity to the vector
-						entities.push_back(Entity(temp_ent.entity_index,
-							temp_ent.name,
-							temp_ent.max_press,
-							temp_ent.min_press,
-							temp_ent.fluid_level,
-							temp_ent.max_cap,
-							temp_ent.prod_rate,
-							temp_ent.current_press));
 					}
+					// If no index was found, and not a comment, add to map for later index assignment
+					else
+					{
+						// if no index, only add to map. -1 to flag no index, used for adding index later
+						// when creating connections
+						element = make_tuple(token, -1);
+					}
+
+					// add to row
+					row_data.push_back(element);
 				}
 			}
-			map.push_back(temp_strvec);
+			// add to map
+			map.push_back(row_data);
 		}
 
+
+		// iterate through map
+		// Tanks - only connect in one direction
+		// UP - only connects down, probably automatically create connection to it's DP
+
+		// if element is 
+
+
+		/*
 		// iterate through the map, create indices for un-indexed entities.
 		// Create entity objects and entity connections
 		for (int i = 0; i < map.size(); i++)
@@ -148,6 +149,6 @@ void Reader(string input_file, vector<Entity> & entities, unordered_map<int, int
 
 				}
 			}
-		}
+		}*/
 	}
 }
